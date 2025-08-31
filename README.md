@@ -11,33 +11,32 @@ docker compose up --build
 
 ## API Reference
 
-```http
-  POST http://localhost:3002/analyze
-```
-
+Request:
+```bash
 curl --location 'http://localhost:3002/analyze' \
 --header 'session-id: test-session-124' \
 --header 'Content-Type: application/json' \
 --data '{
-  "gameAlias": "test_game_alias",
+  "gameAlias": "game1",
   "model": "llava",
-  "image": "", 
+  "image": "", // base64 string
   "countryCode": "CY",
   "ip": "127.0.0.1",
   "mode": "real",
   "brandDomain": "example.com",
-  "device": "iPhone 16",
+  "device": "iPhone 16 Pro Max",
   "os": "iOS 18.2"
 }
 '
 
+Response:
 ```json
 {
     "success": true,
     "sessionId": "test-session-124",
-    "gameAlias": "test_game",
+    "gameAlias": "game1",
     "result": "true",
-    "reason": "Game is clearly visible and playable",
+    "reason": "Game screen is clearly visible and playable",
     "model": "llava"
 }
 ```
