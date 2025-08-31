@@ -8,6 +8,7 @@ Service for analyzing images (Node.js + PostgreSQL + Ollama).
 git clone https://github.com/kkabanova/ai_help_us.git
 cd ai_help_us
 docker compose up --build
+```
 
 ## API Reference
 
@@ -28,6 +29,7 @@ curl --location 'http://localhost:3002/analyze' \
   "os": "iOS 18.2"
 }
 '
+```
 
 Response:
 ```json
