@@ -17,6 +17,7 @@ const DB_USER = process.env.DB_USER || "myuser";
 const DB_PASSWORD = process.env.DB_PASSWORD || "mypassword";
 const DB_NAME = process.env.DB_NAME || "mydb";
 const DB_PORT = Number(process.env.DB_PORT) || 5432;
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || "llava";
 
 const OLLAMA_HOST = process.env.OLLAMA_HOST || "http://ollama:11434";
 const PORT = Number(process.env.PORT) || 3002;
@@ -76,19 +77,40 @@ initDB().catch((err) => {
 // ---- Routes ----
 app.post("/analyze", async (req, res) => {
   try {
-    const {
-      gameAlias,
-      image,
-      countryCode,
-      ip,
-      mode,
-      brandDomain,
-      device,
-      os,
-      model,
-    } = req.body;
+    const { gameAlias, image, countryCode, ip, mode, brandDomain, device, os } =
+      req.body;
 
     const sessionId = req.headers["session-id"] || null;
+
+    // --------- ВАЛИДАЦИЯ ---------
+    const errors = [];
+
+    // helper: проверка непустой строки
+    const isNonEmptyStr = (v) => typeof v === "string" && v.trim().length > 0;
+
+    if (!isNonEmptyStr(gameAlias))
+      errors.push({ field: "gameAlias", message: "gameAlias is required" });
+    if (!isNonEmptyStr(image))
+      errors.push({ field: "image", message: "image (base64) is required" });
+    if (!isNonEmptyStr(countryCode))
+      errors.push({ field: "countryCode", message: "countryCode is required" });
+    if (!isNonEmptyStr(ip))
+      errors.push({ field: "ip", message: "ip is required" });
+    if (!isNonEmptyStr(mode))
+      errors.push({ field: "mode", message: "mode is required" });
+    if (!isNonEmptyStr(brandDomain))
+      errors.push({ field: "brandDomain", message: "brandDomain is required" });
+    if (!isNonEmptyStr(device))
+      errors.push({ field: "device", message: "device is required" });
+    if (!isNonEmptyStr(os))
+      errors.push({ field: "os", message: "os is required" });
+
+    if (errors.length) {
+      return res.status(400).json({
+        error: "Validation error",
+        details: errors,
+      });
+    }
 
     const prompt = `"You are an AI system that analyzes a screenshot of an online casino game launch.
     Your task is to determine the game launch status based only on the visual content of the screenshot.
@@ -102,12 +124,13 @@ app.post("/analyze", async (req, res) => {
      - \\"undefined\\" if you cannot determine the status from the screenshot.
      - The explanation must be very short, maximum 10 words."`;
 
+    let ollamaRes;
     try {
       ollamaRes = await fetch(`${OLLAMA_HOST}/api/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: model || "llava",
+          model: OLLAMA_MODEL,
           prompt: prompt,
           images: [image],
           stream: false,
@@ -141,7 +164,7 @@ app.post("/analyze", async (req, res) => {
     const { result, reason } = parsed;
 
     console.log(
-      `📊 Analysis result: ${result}, reason: ${reason}, model: ${model || "llava"}`,
+      `📊 Analysis result: ${result}, reason: ${reason}, model: ${OLLAMA_MODEL}`,
     );
 
     await pool.query(
@@ -160,7 +183,7 @@ app.post("/analyze", async (req, res) => {
         os,
         result,
         reason,
-        model || "llava",
+        OLLAMA_MODEL,
       ],
     );
 
@@ -170,7 +193,7 @@ app.post("/analyze", async (req, res) => {
       gameAlias,
       result,
       reason,
-      model: model || "llava",
+      model: OLLAMA_MODEL,
     });
   } catch (err) {
     console.error("❌ Server error:", err);
