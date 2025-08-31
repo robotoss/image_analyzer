@@ -8,7 +8,8 @@ COPY server/package*.json ./
 # Set dependencies based on the lock file and without dev dependencies
 RUN npm ci --omit=dev
 
-COPY server/server.js ./
+COPY server.js ./
+COPY .env ./
 
 EXPOSE 3002
 

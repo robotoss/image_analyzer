@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   ollama:
-    image: ollama/ollama:latest
+    image: ollama/ollama:0.11.8
     container_name: ollama
     ports:
       - "11434:11434"
@@ -15,12 +15,8 @@ services:
     container_name: image-analyzer-server
     ports:
       - "3002:3002"
-    environment:
-      - OLLAMA_HOST=http://ollama:11434
-      - DB_HOST=postgres
-      - DB_USER=myuser
-      - DB_PASSWORD=mypassword
-      - DB_NAME=mydb
+    env_file:
+      - .env
     depends_on:
       - ollama
       - postgres
