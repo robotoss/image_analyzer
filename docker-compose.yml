@@ -1,24 +1,26 @@
 version: "3.9"
 
 services:
-  ollama:
-    image: ollama/ollama:0.11.8
-    container_name: ollama
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
-    entrypoint: ["ollama", "serve"]
+  # Uncomment if need use ollama in docker with depends_on and columes
+  # ollama:
+  #   image: ollama/ollama:0.11.8
+  #   container_name: ollama
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+  #   entrypoint: ["ollama", "serve"]
 
   server:
-    image: kriskabanova1/ai_help_us:v4
-    container_name: image-analyzer-server
+    build:
+      context: ./server
+      dockerfile: Dockerfile
     ports:
       - "3002:3002"
     env_file:
       - server/.env
     depends_on:
-      - ollama
+      # - ollama
       - postgres
 
   postgres:
@@ -34,5 +36,5 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
 volumes:
-  ollama_data:
+  # ollama_data:
   postgres_data:
