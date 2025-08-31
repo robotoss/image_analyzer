@@ -102,16 +102,24 @@ app.post("/analyze", async (req, res) => {
      - \\"undefined\\" if you cannot determine the status from the screenshot.
      - The explanation must be very short, maximum 10 words."`;
 
-    const ollamaRes = await fetch(`${OLLAMA_HOST}/api/generate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: model || "llava",
-        prompt: prompt,
-        images: [image],
-        stream: false,
-      }),
-    });
+    try {
+      ollamaRes = await fetch(`${OLLAMA_HOST}/api/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: model || "llava",
+          prompt: prompt,
+          images: [image],
+          stream: false,
+        }),
+      });
+    } catch (networkErr) {
+      console.error("❌ Could not reach LLM service:", networkErr.message);
+      return res.status(503).json({
+        error:
+          "LLM service is not available. Please check if Ollama is running.",
+      });
+    }
 
     const text = await ollamaRes.text();
     let parsed;
