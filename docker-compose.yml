@@ -16,7 +16,7 @@ services:
     ports:
       - "3002:3002"
     env_file:
-      - .env
+      - server/.env
     depends_on:
       - ollama
       - postgres
